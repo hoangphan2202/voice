@@ -59,7 +59,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
       speech.destroy();
       speech = null;
     }
-    
+
     if(opts.hasKey("RECOGNIZER_ENGINE")) {
       switch (opts.getString("RECOGNIZER_ENGINE")) {
         case "GOOGLE": {
@@ -75,7 +75,18 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
 
     speech.setRecognitionListener(this);
 
-    final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+//             intent.putExtra(
+//                 RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+//             )
+            intent.putExtra(
+                RecognizerIntent.EXTRA_CALLING_PACKAGE, this.application?.packageName ?: ""
+            );
+            intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+            intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+//     final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
     // Load the intent with options from JS
     ReadableMapKeySetIterator iterator = opts.keySetIterator();
@@ -83,18 +94,22 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
       String key = iterator.nextKey();
       switch (key) {
         case "EXTRA_LANGUAGE_MODEL":
-          switch (opts.getString(key)) {
-            case "LANGUAGE_MODEL_FREE_FORM":
-              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-              break;
-            case "LANGUAGE_MODEL_WEB_SEARCH":
-              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-              break;
-            default:
-              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-              break;
-          }
-          break;
+             intent.putExtra(
+                         RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                     );
+                  break;
+//           switch (opts.getString(key)) {
+//             case "LANGUAGE_MODEL_FREE_FORM":
+//               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+//               break;
+//             case "LANGUAGE_MODEL_WEB_SEARCH":
+//               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+//               break;
+//             default:
+//               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+//               break;
+//           }
+//           break;
         case "EXTRA_MAX_RESULTS": {
           Double extras = opts.getDouble(key);
           intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());

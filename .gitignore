@@ -15,9 +15,9 @@ build/
 VoiceModule.iml
 yarn-error.log
 
-dist
+#dist
 
-plugin/build
+#plugin/build
 
 # user-specific files
 local.properties
