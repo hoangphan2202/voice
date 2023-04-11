@@ -76,33 +76,25 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
     speech.setRecognitionListener(this);
 
     final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            );
-            intent.putExtra(
-                RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getReactApplicationContext().getPackageName()
-            );
-
-//     final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
     // Load the intent with options from JS
     ReadableMapKeySetIterator iterator = opts.keySetIterator();
     while (iterator.hasNextKey()) {
       String key = iterator.nextKey();
       switch (key) {
-//         case "EXTRA_LANGUAGE_MODEL":
-//           switch (opts.getString(key)) {
-//             case "LANGUAGE_MODEL_FREE_FORM":
-//               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-//               break;
-//             case "LANGUAGE_MODEL_WEB_SEARCH":
-//               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-//               break;
-//             default:
-//               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-//               break;
-//           }
-//           break;
+        case "EXTRA_LANGUAGE_MODEL":
+          switch (opts.getString(key)) {
+            case "LANGUAGE_MODEL_FREE_FORM":
+              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+              break;
+            case "LANGUAGE_MODEL_WEB_SEARCH":
+              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+              break;
+            default:
+              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+              break;
+          }
+          break;
         case "EXTRA_MAX_RESULTS": {
           Double extras = opts.getDouble(key);
           intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
