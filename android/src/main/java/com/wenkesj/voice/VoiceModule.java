@@ -75,12 +75,12 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
 
     speech.setRecognitionListener(this);
 
-    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-//             intent.putExtra(
-//                 RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-//             )
+    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             intent.putExtra(
-                RecognizerIntent.EXTRA_CALLING_PACKAGE, this.application?.packageName ?: ""
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            );
+            intent.putExtra(
+                RecognizerIntent.EXTRA_CALLING_PACKAGE, this.application.packageName
             );
             intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
             intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
@@ -93,11 +93,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
     while (iterator.hasNextKey()) {
       String key = iterator.nextKey();
       switch (key) {
-        case "EXTRA_LANGUAGE_MODEL":
-             intent.putExtra(
-                         RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-                     );
-                  break;
+//         case "EXTRA_LANGUAGE_MODEL":
 //           switch (opts.getString(key)) {
 //             case "LANGUAGE_MODEL_FREE_FORM":
 //               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
