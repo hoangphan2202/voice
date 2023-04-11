@@ -75,16 +75,13 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
 
     speech.setRecognitionListener(this);
 
-    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+    final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             );
             intent.putExtra(
                 RecognizerIntent.EXTRA_CALLING_PACKAGE, this.application.packageName
             );
-            intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-            intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
 
 //     final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
