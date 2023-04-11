@@ -80,7 +80,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             );
             intent.putExtra(
-                RecognizerIntent.EXTRA_CALLING_PACKAGE, this.application.packageName
+                RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getReactApplicationContext().getPackageName()
             );
 
 //     final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
