@@ -118,30 +118,21 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
    }
 
   private void startListening(ReadableMap opts) {
-    if (speech != null) {
-      speech.destroy();
-      speech = null;
-    }
+   if (speechRecognizer == null) {
+          return;
+      }
 
-//     if(opts.hasKey("RECOGNIZER_ENGINE")) {
-//       switch (opts.getString("RECOGNIZER_ENGINE")) {
-//         case "GOOGLE": {
-//           speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString("com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
-//           break;
-//         }
-//         default:
-//           speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
-//       }
-//     } else {
-//       speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
-//     }
+      // Destroy previous SpeechRecognizer instance
+      speechRecognizer.destroy();
 
-    this.initSpeechRecognition(getCurrentActivity());
+      // Initialize new SpeechRecognizer instance
+      initSpeechRecognition(getCurrentActivity());
 
-    speech.setRecognitionListener(this);
+      // Set recognition listener
+      speechRecognizer.setRecognitionListener(this);
 
-    final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-
+      // Create intent with options
+      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
     // Load the intent with options from JS
     ReadableMapKeySetIterator iterator = opts.keySetIterator();
     while (iterator.hasNextKey()) {
@@ -172,13 +163,11 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
                 }
                 case "EXTRA_RESULTS_PENDINGINTENT": {
           Double extras = opts.getDouble(key);
-
                   intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
                   break;
                 }
                   case "EXTRA_RESULTS_PENDINGINTENT_BUNDLE": {
           Double extras = opts.getDouble(key);
-
                   intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
                   break;
                 }
