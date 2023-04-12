@@ -119,7 +119,21 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
      speech.destroy();
 
      // Initialize new SpeechRecognizer instance
-     initSpeechRecognition(getCurrentActivity());
+//      initSpeechRecognition(getCurrentActivity());
+
+   if(opts.hasKey("RECOGNIZER_ENGINE")) {
+      switch (opts.getString("RECOGNIZER_ENGINE")) {
+        case "GOOGLE": {
+          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString("com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
+          break;
+        }
+        default:
+          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
+      }
+    } else {
+      speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
+    }
+
 
      // Set recognition listener
      speech.setRecognitionListener(this);
