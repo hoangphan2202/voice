@@ -37,11 +37,16 @@ class RCTVoice {
         }
         return new Promise((resolve, reject) => {
             Voice.destroySpeech((error) => {
-                if (this._listeners) {
-                    this._listeners.map(listener => listener.remove());
-                    this._listeners = null;
+                if (error) {
+                    reject(new Error(error));
                 }
-                resolve();
+                else {
+                    if (this._listeners) {
+                        this._listeners.map(listener => listener.remove());
+                        this._listeners = null;
+                    }
+                    resolve();
+                }
             });
         });
     }
