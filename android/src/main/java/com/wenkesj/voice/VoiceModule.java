@@ -14,6 +14,7 @@ import android.speech.SpeechRecognizer;
 import androidx.annotation.NonNull;
 import android.util.Log;
 import android.app.Activity;
+import android.content.ServiceConnection;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -114,23 +115,23 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
       if (recognitionServiceName==null)
           return;
 
-      speechRecognizer = SpeechRecognizer.createSpeechRecognizer(activity,
+      speech = SpeechRecognizer.createSpeechRecognizer(activity,
               ComponentName.unflattenFromString(recognitionServiceName));
    }
 
   private void startListening(ReadableMap opts) {
-   if (speechRecognizer == null) {
+   if (speech == null) {
           return;
       }
 
       // Destroy previous SpeechRecognizer instance
-      speechRecognizer.destroy();
+      speech.destroy();
 
       // Initialize new SpeechRecognizer instance
       initSpeechRecognition(getCurrentActivity());
 
       // Set recognition listener
-      speechRecognizer.setRecognitionListener(this);
+      speech.setRecognitionListener(this);
 
       // Create intent with options
       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
