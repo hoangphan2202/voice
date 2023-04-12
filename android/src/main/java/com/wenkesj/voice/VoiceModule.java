@@ -160,21 +160,6 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
           intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
           break;
         }
-                case "EXTRA_LANGUAGE": {
-                Double extras = opts.getDouble(key);
-                  intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
-                  break;
-                }
-                case "EXTRA_RESULTS_PENDINGINTENT": {
-          Double extras = opts.getDouble(key);
-                  intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
-                  break;
-                }
-                  case "EXTRA_RESULTS_PENDINGINTENT_BUNDLE": {
-          Double extras = opts.getDouble(key);
-                  intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
-                  break;
-                }
         case "EXTRA_PARTIAL_RESULTS": {
           intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, opts.getBoolean(key));
           break;
