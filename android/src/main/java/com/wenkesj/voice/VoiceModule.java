@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import android.util.Log;
 import android.app.Activity;
 import android.content.ServiceConnection;
+import android.content.Context;
+import android.os.IBinder;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
