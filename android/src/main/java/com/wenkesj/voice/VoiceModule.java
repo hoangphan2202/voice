@@ -58,85 +58,75 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
     return Locale.getDefault().toString();
   }
 
-  public static String getAvailableVoiceRecognitionService(Activity activity)
-  {
-      final List<ResolveInfo> services = activity.getPackageManager().queryIntentServices(
-              new Intent(RecognitionService.SERVICE_INTERFACE), 0);
+ public static String getAvailableVoiceRecognitionService(Activity activity) {
+     final PackageManager pm = activity.getPackageManager();
+     final List<ResolveInfo> services = pm.queryIntentServices(new Intent(RecognitionService.SERVICE_INTERFACE), PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
 
-      String recognitionServiceName = null;
+     String recognitionServiceName = null;
 
-      for (final ResolveInfo info : services)
-      {
-          String packageName = info.serviceInfo.packageName;
-          String serviceName = info.serviceInfo.name;
+     for (final ResolveInfo info : services) {
+         String packageName = info.serviceInfo.packageName;
+         String serviceName = info.serviceInfo.name;
 
-          String testRecognitionServiceName = packageName + "/" + serviceName;
+         String testRecognitionServiceName = packageName + "/" + serviceName;
 
-          ServiceConnection connection = new ServiceConnection() {
-              @Override
-              public void onServiceConnected(ComponentName name, IBinder service) {
+         ServiceConnection connection = new ServiceConnection() {
+             @Override
+             public void onServiceConnected(ComponentName name, IBinder service) {
+             }
 
-              }
+             @Override
+             public void onServiceDisconnected(ComponentName name) {
+             }
+         };
 
-              @Override
-              public void onServiceDisconnected(ComponentName name) {
+         Intent serviceIntent = new Intent(RecognitionService.SERVICE_INTERFACE);
+         ComponentName recognizerServiceComponent = ComponentName.unflattenFromString(testRecognitionServiceName);
 
-              }
-          };
+         if (recognizerServiceComponent != null) {
+             serviceIntent.setComponent(recognizerServiceComponent);
+             try {
+                 boolean isServiceAvailableToBind = activity.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
+                 if (isServiceAvailableToBind) {
+                     activity.unbindService(connection);
+                     recognitionServiceName = testRecognitionServiceName;
+                     break;
+                 }
+             } catch (SecurityException e) {
+                 e.printStackTrace();
+             }
+         }
+     }
 
-          Intent serviceIntent = new Intent(RecognitionService.SERVICE_INTERFACE);
+     return recognitionServiceName;
+ }
 
-          ComponentName recognizerServiceComponent =
-                  ComponentName.unflattenFromString(testRecognitionServiceName);
-
-          if (recognizerServiceComponent != null)
-          {
-              serviceIntent.setComponent(recognizerServiceComponent);
-              try
-              {
-                  boolean isServiceAvailableToBind = activity.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
-                  if (isServiceAvailableToBind) {
-                      activity.unbindService(connection);
-                      recognitionServiceName=testRecognitionServiceName;
-                      break;
-                  }
-              }
-              catch (SecurityException e)
-              {
-                  e.printStackTrace();
-              }
-          }
-      }
-
-      return recognitionServiceName;
-  }
-
-  public void initSpeechRecognition(Activity activity)
-  {
+ public void initSpeechRecognition(Activity activity) {
      String recognitionServiceName = getAvailableVoiceRecognitionService(activity);
-      if (recognitionServiceName==null)
-          return;
+     if (recognitionServiceName == null) {
+         return;
+     }
 
-      speech = SpeechRecognizer.createSpeechRecognizer(activity,
-              ComponentName.unflattenFromString(recognitionServiceName));
-   }
+     speech = SpeechRecognizer.createSpeechRecognizer(activity, ComponentName.unflattenFromString(recognitionServiceName));
+ }
 
   private void startListening(ReadableMap opts) {
-   if (speech == null) {
-          return;
-      }
+     if (speech == null) {
+         return;
+     }
 
-      // Destroy previous SpeechRecognizer instance
-      speech.destroy();
+     // Destroy previous SpeechRecognizer instance
+     speech.destroy();
 
-      // Initialize new SpeechRecognizer instance
-      initSpeechRecognition(getCurrentActivity());
+     // Initialize new SpeechRecognizer instance
+     initSpeechRecognition(getCurrentActivity());
 
-      // Set recognition listener
-      speech.setRecognitionListener(this);
+     // Set recognition listener
+     speech.setRecognitionListener(this);
 
-      // Create intent with options
-      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+     // Create intent with options
+     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+
     // Load the intent with options from JS
     ReadableMapKeySetIterator iterator = opts.keySetIterator();
     while (iterator.hasNextKey()) {
