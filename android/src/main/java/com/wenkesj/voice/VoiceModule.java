@@ -54,24 +54,89 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
     return Locale.getDefault().toString();
   }
 
+  public static String getAvailableVoiceRecognitionService(Activity activity)
+  {
+      final List<ResolveInfo> services = activity.getPackageManager().queryIntentServices(
+              new Intent(RecognitionService.SERVICE_INTERFACE), 0);
+
+      String recognitionServiceName = null;
+
+      for (final ResolveInfo info : services)
+      {
+          String packageName = info.serviceInfo.packageName;
+          String serviceName = info.serviceInfo.name;
+
+          String testRecognitionServiceName = packageName + "/" + serviceName;
+
+          ServiceConnection connection = new ServiceConnection() {
+              @Override
+              public void onServiceConnected(ComponentName name, IBinder service) {
+
+              }
+
+              @Override
+              public void onServiceDisconnected(ComponentName name) {
+
+              }
+          };
+
+          Intent serviceIntent = new Intent(RecognitionService.SERVICE_INTERFACE);
+
+          ComponentName recognizerServiceComponent =
+                  ComponentName.unflattenFromString(testRecognitionServiceName);
+
+          if (recognizerServiceComponent != null)
+          {
+              serviceIntent.setComponent(recognizerServiceComponent);
+              try
+              {
+                  boolean isServiceAvailableToBind = activity.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
+                  if (isServiceAvailableToBind) {
+                      activity.unbindService(connection);
+                      recognitionServiceName=testRecognitionServiceName;
+                      break;
+                  }
+              }
+              catch (SecurityException e)
+              {
+                  e.printStackTrace();
+              }
+          }
+      }
+
+      return recognitionServiceName;
+  }
+
+  public void initSpeechRecognition(Activity activity)
+  {
+     String recognitionServiceName = getAvailableVoiceRecognitionService(activity);
+      if (recognitionServiceName==null)
+          return;
+
+      speechRecognizer = SpeechRecognizer.createSpeechRecognizer(activity,
+              ComponentName.unflattenFromString(recognitionServiceName));
+   }
+
   private void startListening(ReadableMap opts) {
     if (speech != null) {
       speech.destroy();
       speech = null;
     }
 
-    if(opts.hasKey("RECOGNIZER_ENGINE")) {
-      switch (opts.getString("RECOGNIZER_ENGINE")) {
-        case "GOOGLE": {
-          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString("com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
-          break;
-        }
-        default:
-          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
-      }
-    } else {
-      speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
-    }
+//     if(opts.hasKey("RECOGNIZER_ENGINE")) {
+//       switch (opts.getString("RECOGNIZER_ENGINE")) {
+//         case "GOOGLE": {
+//           speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString("com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
+//           break;
+//         }
+//         default:
+//           speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
+//       }
+//     } else {
+//       speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
+//     }
+
+    this.initSpeechRecognition(getCurrentActivity());
 
     speech.setRecognitionListener(this);
 
@@ -100,6 +165,23 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
           intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
           break;
         }
+                case "EXTRA_LANGUAGE": {
+                Double extras = opts.getDouble(key);
+                  intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
+                  break;
+                }
+                case "EXTRA_RESULTS_PENDINGINTENT": {
+          Double extras = opts.getDouble(key);
+
+                  intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
+                  break;
+                }
+                  case "EXTRA_RESULTS_PENDINGINTENT_BUNDLE": {
+          Double extras = opts.getDouble(key);
+
+                  intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, extras.intValue());
+                  break;
+                }
         case "EXTRA_PARTIAL_RESULTS": {
           intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, opts.getBoolean(key));
           break;
