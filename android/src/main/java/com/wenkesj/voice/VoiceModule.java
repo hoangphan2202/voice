@@ -382,7 +382,7 @@ public void initSpeechRecognition(Activity activity) {
     String mResult = "";
 
     ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-    ArrayList<String> unstableData = partialResults.getStringArrayList("android.speech.extra.UNSTABLE_TEXT");
+    ArrayList<String> unstableData = results.getStringArrayList("android.speech.extra.UNSTABLE_TEXT");
     mResult = matches.get(0) + unstableData.get(0);
 
     for (String result : matches) {
@@ -390,7 +390,7 @@ public void initSpeechRecognition(Activity activity) {
     }
 
     WritableMap event = Arguments.createMap();
-    event.putArray("value", mResult);
+    event.putString("value", mResult);
     sendEvent("onSpeechPartialResults", event);
     Log.d("ASR", "onPartialResults()");
   }
