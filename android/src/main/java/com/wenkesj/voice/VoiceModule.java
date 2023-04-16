@@ -379,9 +379,10 @@ public void initSpeechRecognition(Activity activity) {
   @Override
   public void onPartialResults(Bundle results) {
     WritableArray arr = Arguments.createArray();
+    String mResult = "";
 
     ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-    ArrayList<String> unstableData = results.getStringArrayList("android.speech.extra.UNSTABLE_TEXT");
+    ArrayList<String> unstableData = partialResults.getStringArrayList("android.speech.extra.UNSTABLE_TEXT");
     mResult = matches.get(0) + unstableData.get(0);
 
     for (String result : matches) {
