@@ -101,26 +101,26 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
      return recognitionServiceName;
  }
 
- public void initSpeechRecognition(Activity activity) {
-     String recognitionServiceName = getAvailableVoiceRecognitionService(activity);
-     if (recognitionServiceName == null) {
-         return;
-     }
-
-     speech = SpeechRecognizer.createSpeechRecognizer(activity, ComponentName.unflattenFromString(recognitionServiceName));
- }
+public void initSpeechRecognition(Activity activity) {
+    speech = SpeechRecognizer.createSpeechRecognizer(activity);
+}
 
   private void startListening(ReadableMap opts) {
-   if (speech != null) {
-      speech.destroy();
-      speech = null;
-    }
+       if (speech == null) {
+           initSpeechRecognition(getCurrentActivity());
+       } else {
+           // Destroy existing SpeechRecognizer instance on UI thread
+           new Handler(Looper.getMainLooper()).post(new Runnable() {
+               @Override
+               public void run() {
+                   speech.destroy();
+                   speech = null;
+               }
+           });
+       }
 
-     // Initialize new SpeechRecognizer instance
-     initSpeechRecognition(getCurrentActivity());
-
-     // Set recognition listener
-     speech.setRecognitionListener(this);
+       // Set recognition listener
+       speech.setRecognitionListener(this);
 
      // Create intent with options
      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
