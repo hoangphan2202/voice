@@ -46,6 +46,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
   private SpeechRecognizer speech = null;
   private boolean isRecognizing = false;
   private String locale = null;
+  private boolean isErrorAlreadyCalledAfterBeginOfSpeech = false;
 
   public VoiceModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -120,7 +121,7 @@ public void initSpeechRecognition(Activity activity) {
                }
            });
        }
-
+        isErrorAlreadyCalledAfterBeginOfSpeech = false;
        // Set recognition listener
        speech.setRecognitionListener(this);
 
@@ -145,30 +146,30 @@ public void initSpeechRecognition(Activity activity) {
               break;
           }
           break;
-        case "EXTRA_MAX_RESULTS": {
-          Double extras = opts.getDouble(key);
-          intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
-          break;
-        }
+//         case "EXTRA_MAX_RESULTS": {
+//           Double extras = opts.getDouble(key);
+//           intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
+//           break;
+//         }
         case "EXTRA_PARTIAL_RESULTS": {
           intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, opts.getBoolean(key));
           break;
         }
-        case "EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS": {
-          Double extras = opts.getDouble(key);
-          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, extras.intValue());
-          break;
-        }
-        case "EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS": {
-          Double extras = opts.getDouble(key);
-          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
-          break;
-        }
-        case "EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS": {
-          Double extras = opts.getDouble(key);
-          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
-          break;
-        }
+//         case "EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS": {
+//           Double extras = opts.getDouble(key);
+//           intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, extras.intValue());
+//           break;
+//         }
+//         case "EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS": {
+//           Double extras = opts.getDouble(key);
+//           intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
+//           break;
+//         }
+//         case "EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS": {
+//           Double extras = opts.getDouble(key);
+//           intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
+//           break;
+//         }
       }
     }
 
@@ -358,6 +359,10 @@ public void initSpeechRecognition(Activity activity) {
 
   @Override
   public void onError(int errorCode) {
+     if (isErrorAlreadyCalledAfterBeginOfSpeech) {
+              return;
+          }
+          isErrorAlreadyCalledAfterBeginOfSpeech = true;
     String errorMessage = String.format("%d/%s", errorCode, getErrorText(errorCode));
     WritableMap error = Arguments.createMap();
     error.putString("message", errorMessage);
@@ -377,7 +382,7 @@ public void initSpeechRecognition(Activity activity) {
 
     ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
     ArrayList<String> unstableData = results.getStringArrayList("android.speech.extra.UNSTABLE_TEXT");
-    mResult = data.get(0) + unstableData.get(0);
+    mResult = matches.get(0) + unstableData.get(0);
 
     for (String result : matches) {
       arr.pushString(result);
