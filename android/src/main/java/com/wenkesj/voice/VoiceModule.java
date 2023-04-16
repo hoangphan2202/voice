@@ -18,6 +18,7 @@ import android.content.ServiceConnection;
 import android.content.Context;
 import android.os.IBinder;
 import android.os.Looper;
+import android.media.AudioManager;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
