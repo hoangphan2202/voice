@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.content.ServiceConnection;
 import android.content.Context;
 import android.os.IBinder;
+import android.os.Looper;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
