@@ -171,6 +171,10 @@ public void initSpeechRecognition(Activity activity) {
       }
     }
 
+    // Mute notification stream
+    AudioManager mAudioManager = (AudioManager) this.reactContext.getSystemService(Context.AUDIO_SERVICE);
+    mAudioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0);
+
     intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, getLocale(this.locale));
     speech.startListening(intent);
   }
