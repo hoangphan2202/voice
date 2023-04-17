@@ -13,11 +13,6 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import androidx.annotation.NonNull;
 import android.util.Log;
-import android.app.Activity;
-import android.content.ServiceConnection;
-import android.content.Context;
-import android.os.IBinder;
-import android.os.Looper;
 import android.media.AudioManager;
 
 import com.facebook.react.bridge.Arguments;
@@ -46,7 +41,6 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
   private SpeechRecognizer speech = null;
   private boolean isRecognizing = false;
   private String locale = null;
-  private boolean isErrorAlreadyCalledAfterBeginOfSpeech = false;
 
   public VoiceModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -61,72 +55,28 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
     return Locale.getDefault().toString();
   }
 
- public static String getAvailableVoiceRecognitionService(Activity activity) {
-     final PackageManager pm = activity.getPackageManager();
-     final List<ResolveInfo> services = pm.queryIntentServices(new Intent(RecognitionService.SERVICE_INTERFACE), PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
-
-     String recognitionServiceName = null;
-
-     for (final ResolveInfo info : services) {
-         String packageName = info.serviceInfo.packageName;
-         String serviceName = info.serviceInfo.name;
-
-         String testRecognitionServiceName = packageName + "/" + serviceName;
-
-         ServiceConnection connection = new ServiceConnection() {
-             @Override
-             public void onServiceConnected(ComponentName name, IBinder service) {
-             }
-
-             @Override
-             public void onServiceDisconnected(ComponentName name) {
-             }
-         };
-
-         Intent serviceIntent = new Intent(RecognitionService.SERVICE_INTERFACE);
-         ComponentName recognizerServiceComponent = ComponentName.unflattenFromString(testRecognitionServiceName);
-
-         if (recognizerServiceComponent != null) {
-             serviceIntent.setComponent(recognizerServiceComponent);
-             try {
-                 boolean isServiceAvailableToBind = activity.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
-                 if (isServiceAvailableToBind) {
-                     activity.unbindService(connection);
-                     recognitionServiceName = testRecognitionServiceName;
-                     break;
-                 }
-             } catch (SecurityException e) {
-                 e.printStackTrace();
-             }
-         }
-     }
-
-     return recognitionServiceName;
- }
-
-public void initSpeechRecognition(Activity activity) {
-    speech = SpeechRecognizer.createSpeechRecognizer(activity);
-}
-
   private void startListening(ReadableMap opts) {
-       if (speech == null) {
-           initSpeechRecognition(getCurrentActivity());
-       } else {
-           // Destroy existing SpeechRecognizer instance on UI thread
-           new Handler(Looper.getMainLooper()).post(new Runnable() {
-               @Override
-               public void run() {
-                   speech.destroy();
-                   speech = null;
-               }
-           });
-       }
-        isErrorAlreadyCalledAfterBeginOfSpeech = false;
-       // Set recognition listener
-       speech.setRecognitionListener(this);
+    if (speech != null) {
+      speech.destroy();
+      speech = null;
+    }
 
-     // Create intent with options
-     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+    if(opts.hasKey("RECOGNIZER_ENGINE")) {
+      switch (opts.getString("RECOGNIZER_ENGINE")) {
+        case "GOOGLE": {
+          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString("com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
+          break;
+        }
+        default:
+          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
+      }
+    } else {
+      speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext);
+    }
+
+    speech.setRecognitionListener(this);
+
+    final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
     // Load the intent with options from JS
     ReadableMapKeySetIterator iterator = opts.keySetIterator();
@@ -146,34 +96,34 @@ public void initSpeechRecognition(Activity activity) {
               break;
           }
           break;
-//         case "EXTRA_MAX_RESULTS": {
-//           Double extras = opts.getDouble(key);
-//           intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
-//           break;
-//         }
+        case "EXTRA_MAX_RESULTS": {
+          Double extras = opts.getDouble(key);
+          intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, extras.intValue());
+          break;
+        }
         case "EXTRA_PARTIAL_RESULTS": {
           intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, opts.getBoolean(key));
           break;
         }
-//         case "EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS": {
-//           Double extras = opts.getDouble(key);
-//           intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, extras.intValue());
-//           break;
-//         }
-//         case "EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS": {
-//           Double extras = opts.getDouble(key);
-//           intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
-//           break;
-//         }
-//         case "EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS": {
-//           Double extras = opts.getDouble(key);
-//           intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
-//           break;
-//         }
+        case "EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS": {
+          Double extras = opts.getDouble(key);
+          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, extras.intValue());
+          break;
+        }
+        case "EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS": {
+          Double extras = opts.getDouble(key);
+          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
+          break;
+        }
+        case "EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS": {
+          Double extras = opts.getDouble(key);
+          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
+          break;
+        }
       }
     }
 
-    // Mute notification stream
+     // Mute notification stream
     AudioManager mAudioManager = (AudioManager) this.reactContext.getSystemService(Context.AUDIO_SERVICE);
     mAudioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0);
 
@@ -359,10 +309,6 @@ public void initSpeechRecognition(Activity activity) {
 
   @Override
   public void onError(int errorCode) {
-     if (isErrorAlreadyCalledAfterBeginOfSpeech) {
-              return;
-          }
-          isErrorAlreadyCalledAfterBeginOfSpeech = true;
     String errorMessage = String.format("%d/%s", errorCode, getErrorText(errorCode));
     WritableMap error = Arguments.createMap();
     error.putString("message", errorMessage);
@@ -379,18 +325,14 @@ public void initSpeechRecognition(Activity activity) {
   @Override
   public void onPartialResults(Bundle results) {
     WritableArray arr = Arguments.createArray();
-    String mResult = "";
 
     ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-    ArrayList<String> unstableData = results.getStringArrayList("android.speech.extra.UNSTABLE_TEXT");
-    mResult = matches.get(0) + unstableData.get(0);
-
     for (String result : matches) {
       arr.pushString(result);
     }
 
     WritableMap event = Arguments.createMap();
-    event.putString("value", mResult);
+    event.putArray("value", arr);
     sendEvent("onSpeechPartialResults", event);
     Log.d("ASR", "onPartialResults()");
   }
